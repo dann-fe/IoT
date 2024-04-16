@@ -22,6 +22,7 @@ byte YM = 7;
 byte  XP = 6;
 int x = 3;
 int y = 0;
+long timer = 0;
 MCUFRIEND_kbv tft;
 
 byte screen[88] = {
@@ -61,6 +62,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(3000);
+  randomSeed(analogRead(A7));
   tft.reset();
   Serial.println(tft.readID(), HEX);
   Serial.print(tft.width());
@@ -73,12 +75,13 @@ void setup() {
   //tft.setTextSize(2); tft.setCursor(50, tft.width() / 2); tft.setTextColor(WHITE);  //  5x5
   tft.fillRect(0, 0, 80, 240, BLUE);
   tft.fillRect(239, 0, 80, 239, BLUE);
-  tft.fillRect(80-5, 0, 5, 239, YELLOW);
-  tft.fillRect(235, 0, 5, 239, YELLOW);
-  tft.fillRect(80-5, 235, 160, 5, YELLOW);
+  tft.fillRect(80 - 5, 0, 5, 239, YELLOW);
+  tft.fillRect(240, 0, 5, 239, YELLOW);
+  tft.fillRect(80 - 5, 235, 160, 5, YELLOW);
   tft.fillRect(255, 20, 50, 50, YELLOW); //up
   tft.fillRect(255, 170, 50, 50, YELLOW); //right
   tft.fillRect(15, 170, 50, 50, YELLOW); //left
+  timer = millis();
   screen[y * 8 + x] = 1;
   toScreen();
 
@@ -92,11 +95,24 @@ void loop() {
   pinMode(XP, OUTPUT);
   pinMode(YM, OUTPUT);
   if (tp.z > MINPRESSURE && tp.z < MAXPRESSURE) {
-
+    int posy = map(tp.x, 180, 900, 0, 239);
+    int posx = map(tp.y, 960, 180, 0, 319);
   }
-  screen[y * 8 + x] = 0;
-  y = y + 1;
-  screen[y * 8 + x] = 1;
-  toScreen();
-  delay(1000);
+
+  if ((millis() - timer) > 500) {
+    timer = millis();
+    screen[y * 8 + x] = 0;
+    y = y + 1;
+    screen[y * 8 + x] = 1;
+    Serial.println(1);
+    toScreen();
+    Serial.println(2);
+
+    if (y == 10 || screen[(y + 1) * 8 + x]) {
+      y = 0;
+      x = random(0, 8);
+      screen[y * 8 + x] = 1;
+      toScreen();
+    }
+  }
 }
